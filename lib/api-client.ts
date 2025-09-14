@@ -3,47 +3,39 @@ import axios from 'axios';
 const API_BASE = '/api';
 
 export const apiClient = {
-  // Voice endpoints
-  async getVoices() {
-    const response = await axios.get(`${API_BASE}/voices`);
+  // All requests go through our catch-all API route which uses AppEngineClient
+  async request(method: string, path: string, data?: any) {
+    const response = await axios({
+      method,
+      url: `${API_BASE}/${path}`,
+      data,
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
     return response.data;
   },
 
-  async generateSpeech(data: {
-    text: string;
-    voice: string;
-    model?: string;
-    settings?: {
-      stability?: number;
-      similarity?: number;
-      style?: number;
-      speakerBoost?: boolean;
-    };
-  }) {
-    const response = await axios.post(`${API_BASE}/text-to-speech`, data);
-    return response.data;
+  // Just pass requests through - AppEngineClient will handle them
+  async generateSpeech(data: any) {
+    return this.request('POST', 'ai/agent/chat', data);
   },
 
-  async getVoiceSettings(voiceId: string) {
-    const response = await axios.get(`${API_BASE}/voices/${voiceId}/settings`);
-    return response.data;
+  async chat(data: any) {
+    return this.request('POST', 'ai/chat', data);
   },
 
-  // History endpoints
-  async getHistory() {
-    const response = await axios.get(`${API_BASE}/history`);
-    return response.data;
+  async streamChat(data: any) {
+    return this.request('POST', 'ai/agent/stream', data);
   },
 
-  async deleteHistoryItem(id: string) {
-    const response = await axios.delete(`${API_BASE}/history/${id}`);
-    return response.data;
+  async getMcpTools() {
+    return this.request('GET', 'ai/mcp/tools');
   },
 
-  // Audio playback helper
-  async getAudioUrl(audioId: string): Promise<string> {
-    return `${API_BASE}/audio/${audioId}`;
-  },
+  async executeMcpTool(toolName: string, args: any) {
+    return this.request('POST', 'ai/mcp/execute', { toolName, args });
+  }
 };
 
 export default apiClient;
