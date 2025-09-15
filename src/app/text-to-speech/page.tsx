@@ -14,99 +14,26 @@ import {
   EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
-import apiClient from "@/lib/api-client";
+import { voiceService, type Voice } from "@/lib/voice-service";
+import AudioPlayer from "@/components/audio-player";
 
-interface Voice {
-  id: string;
-  name: string;
-  description: string;
-  avatar: string;
+interface VoiceDisplay extends Voice {
   bgColor: string;
-  category: "recently" | "default" | "professional" | "library";
 }
 
-const voices: Voice[] = [
-  {
-    id: "liam-1",
-    name: "Liam",
-    description: "A young adult with energy and warmth",
-    avatar: "👨",
-    bgColor: "bg-green-100",
-    category: "recently"
-  },
-  {
-    id: "marlena",
-    name: "Marlena",
-    description: "Pleasant, expressive yet calm feminine voice",
-    avatar: "👩",
-    bgColor: "bg-pink-100",
-    category: "recently"
-  },
-  {
-    id: "lina",
-    name: "LINA PROFESSIONAL",
-    description: "Warm, expressive Latina voice with authentic accent",
-    avatar: "💫",
-    bgColor: "bg-blue-100",
-    category: "recently"
-  },
-  {
-    id: "cassidy",
-    name: "Cassidy",
-    description: "A confident female podcaster with authoritative tone",
-    avatar: "🎙️",
-    bgColor: "bg-purple-100",
-    category: "recently"
-  },
-  {
-    id: "brian",
-    name: "Brian",
-    description: "Middle-aged man with a resonant and engaging voice",
-    avatar: "🧔",
-    bgColor: "bg-amber-100",
-    category: "recently"
-  },
-  {
-    id: "liam-2",
-    name: "Liam",
-    description: "A young adult with energy and warmth",
-    avatar: "👨",
-    bgColor: "bg-green-100",
-    category: "default"
-  },
-  {
-    id: "brian-2",
-    name: "Brian",
-    description: "Middle-aged man with a resonant and engaging voice",
-    avatar: "🧔",
-    bgColor: "bg-amber-100",
-    category: "default"
-  },
-  {
-    id: "alice",
-    name: "Alice",
-    description: "Clear and engaging, friendly woman with a natural tone",
-    avatar: "👩‍💼",
-    bgColor: "bg-cyan-100",
-    category: "default"
-  },
-  {
-    id: "bill",
-    name: "Bill",
-    description: "Friendly and comforting voice ready to narrate",
-    avatar: "👨‍💼",
-    bgColor: "bg-indigo-100",
-    category: "default"
-  },
-  {
-    id: "callum",
-    name: "Callum",
-    description: "Deceptively gravelly, yet unsettling edge",
-    avatar: "🎭",
-    bgColor: "bg-red-100",
-    category: "default"
-  },
-];
+// Color mapping for voices
+const voiceColors: Record<string, string> = {
+  'alloy': 'bg-green-100',
+  'echo': 'bg-amber-100',
+  'fable': 'bg-blue-100',
+  'onyx': 'bg-purple-100',
+  'nova': 'bg-pink-100',
+  'shimmer': 'bg-cyan-100',
+  'rachel': 'bg-indigo-100',
+  'adam': 'bg-red-100',
+  'bella': 'bg-yellow-100',
+  'josh': 'bg-emerald-100'
+};
 
 const historyItems = [
   {
@@ -130,96 +57,35 @@ const historyItems = [
     timestamp: "5 days ago",
     duration: "0:45",
   },
-  {
-    id: 4,
-    text: "Prompt your idea into reality with — Appmint. One line, one platform, endless possibilities.",
-    voice: "Jessica Anne Bogart",
-    timestamp: "last week",
-    duration: "0:18",
-  },
-  {
-    id: 5,
-    text: "Stop wasting months and thousands just to test an idea. With Appmint, you describe it, and it's live.",
-    voice: "Jessica Anne Bogart",
-    timestamp: "last week",
-    duration: "0:22",
-  },
-  {
-    id: 6,
-    text: "Get your mobile app live in hours, not months. With Appmint, you describe, we build.",
-    voice: "Jessa",
-    timestamp: "last week",
-    duration: "0:19",
-  },
-  {
-    id: 7,
-    text: "You think AI is just chat? Meanwhile, 16-year-olds are building apps with one sentence.",
-    voice: "Brian",
-    timestamp: "2 weeks ago",
-    duration: "0:15",
-  },
 ];
 
 const sampleTexts = [
   {
     id: 1,
-    title: "Option 1 — Direct Confrontation",
-    text: `"Your IT provider says they've embraced AI.
-So why are your costs the same?
-If engineers are gone, and agents are doing the work...
-where are your savings?"`,
-    icon: "🔥",
+    title: "Welcome Message",
+    text: `Welcome to our text-to-speech platform. Experience natural-sounding voices powered by advanced AI technology.`,
+    icon: "👋",
   },
   {
     id: 2,
-    title: "Option 2 — Exposing the Scam",
-    text: `"Here's the dirty secret of IT right now.
-AI slashed costs by eighty percent.
-But your provider didn't cut your bill.
-They cut their costs and kept the margin."`,
-    icon: "⚡",
+    title: "Product Demo",
+    text: `Transform your text into lifelike speech with our cutting-edge AI voices. Perfect for content creators, educators, and businesses.`,
+    icon: "💼",
   },
   {
     id: 3,
-    title: "Option 3 — The Customer Challenge",
-    text: `"AI has wiped out entire teams of engineers.
-That means your IT costs should be eighty percent lower.
-If they're not — your provider is keeping what should be yours."
-
-Right now, companies everywhere are cutting staff.
-Not because of recession.
-Not because of lack of work.
-But because agents are doing what entire engineering teams used to do.
-
-Eighty percent of IT service costs used to be engineers.
-Today? Agents are doing that work — faster, cheaper, better.
-
-But here's the problem.
-Your provider hasn't passed the savings to you.
-They cut their costs.
-They didn't cut your bill.
-They kept the margin.
-And if they're charging you the same price... they're scamming you.
-
-The truth is simple.
-Your IT costs should drop by eighty percent.
-That's the real math.
-
-And if your agent isn't giving you those savings, we will.
-We're here to deliver ninety percent cost reduction.
-With a free trial.
-No gimmicks. No excuses. Just the future of IT — at the price it should be.
-
-Stop paying for empty seats.
-Stop funding their margins.`,
-    icon: "🚀",
+    title: "Story Opening",
+    text: `Once upon a time, in a land far away, there lived a wise old wizard who possessed the secret to eternal happiness.`,
+    icon: "📚",
   },
 ];
 
 export default function TextToSpeechPage() {
   const [text, setText] = useState("");
-  const [selectedVoice, setSelectedVoice] = useState<Voice>(voices[0]);
+  const [voices, setVoices] = useState<VoiceDisplay[]>([]);
+  const [selectedVoice, setSelectedVoice] = useState<VoiceDisplay | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [loadingVoices, setLoadingVoices] = useState(true);
   const [activeTab, setActiveTab] = useState<"settings" | "history">("settings");
   const [showVoicePanel, setShowVoicePanel] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -231,11 +97,42 @@ export default function TextToSpeechPage() {
   const [speakerBoost, setSpeakerBoost] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const characterCount = text.length;
   const maxCharacters = 5000;
   const credits = 81831;
+
+  // Fetch voices on mount
+  useEffect(() => {
+    const fetchVoices = async () => {
+      try {
+        setLoadingVoices(true);
+        const fetchedVoices = await voiceService.getVoices();
+        
+        // Map voices to include bgColor
+        const displayVoices: VoiceDisplay[] = fetchedVoices.map(voice => ({
+          ...voice,
+          bgColor: voiceColors[voice.id] || 'bg-gray-100'
+        }));
+        
+        setVoices(displayVoices);
+        
+        // Set default voice
+        if (displayVoices.length > 0) {
+          setSelectedVoice(displayVoices[0]);
+        }
+      } catch (err) {
+        console.error('Error fetching voices:', err);
+        setError('Failed to load voices');
+      } finally {
+        setLoadingVoices(false);
+      }
+    };
+
+    fetchVoices();
+  }, []);
 
   // Setup audio event listeners
   useEffect(() => {
@@ -259,16 +156,22 @@ export default function TextToSpeechPage() {
 
   const handleGenerateSpeech = async () => {
     if (!text.trim()) {
-      alert("Please enter some text to generate speech");
+      setError("Please enter some text to generate speech");
+      return;
+    }
+
+    if (!selectedVoice) {
+      setError("Please select a voice");
       return;
     }
 
     setIsGenerating(true);
+    setError(null);
     try {
-      const response = await apiClient.generateSpeech({
+      const response = await voiceService.generateSpeech({
         text: text,
-        voice: selectedVoice.id,
-        model: "eleven_multilingual_v2",
+        voiceId: selectedVoice.id,
+        model: "tts-1",
         settings: {
           stability: stability,
           similarity: similarity,
@@ -277,7 +180,7 @@ export default function TextToSpeechPage() {
         }
       });
 
-      if (response.audioUrl) {
+      if (response.success && response.audioUrl) {
         setGeneratedAudioUrl(response.audioUrl);
         // Auto-play the generated audio
         if (audioRef.current) {
@@ -286,9 +189,9 @@ export default function TextToSpeechPage() {
           setIsPlaying(true);
         }
       }
-    } catch (error) {
-      console.error("Error generating speech:", error);
-      alert("Failed to generate speech. Please try again.");
+    } catch (err) {
+      console.error("Error generating speech:", err);
+      setError(err instanceof Error ? err.message : "Failed to generate speech. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -327,8 +230,9 @@ export default function TextToSpeechPage() {
     voice.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const recentlyUsedVoices = filteredVoices.filter(v => v.category === "recently");
-  const defaultVoices = filteredVoices.filter(v => v.category === "default");
+  // Group voices by provider
+  const openAIVoices = filteredVoices.filter(v => v.provider === 'openai');
+  const elevenLabsVoices = filteredVoices.filter(v => v.provider === 'elevenlabs');
 
   return (
     <div className="flex h-full bg-[#fafafa]">
@@ -371,14 +275,21 @@ export default function TextToSpeechPage() {
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Voice</label>
                 <button
                   onClick={() => setShowVoicePanel(!showVoicePanel)}
-                  className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+                  disabled={loadingVoices}
+                  className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-6 h-6 ${selectedVoice.bgColor} rounded-full flex items-center justify-center`}>
-                      <span className="text-xs">{selectedVoice.avatar}</span>
+                  {loadingVoices ? (
+                    <span className="text-sm text-gray-500">Loading voices...</span>
+                  ) : selectedVoice ? (
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-6 h-6 ${selectedVoice.bgColor} rounded-full flex items-center justify-center`}>
+                        <span className="text-xs">{selectedVoice.avatar}</span>
+                      </div>
+                      <span className="text-sm">{selectedVoice.name}</span>
                     </div>
-                    <span className="text-sm">{selectedVoice.name}</span>
-                  </div>
+                  ) : (
+                    <span className="text-sm text-gray-500">Select a voice</span>
+                  )}
                   <ChevronRightIcon className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
@@ -647,54 +558,26 @@ export default function TextToSpeechPage() {
           </div>
         </div>
 
-        {/* Audio Player */}
-        <div className="bg-white border-t border-gray-100 px-6 py-4">
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-500">
-              Stop wasting months and thousands just to test...
-            </span>
-            <div className="flex-1 flex items-center space-x-3">
-              <CheckCircleIcon className="w-4 h-4 text-green-500" />
-              <span className="text-sm text-gray-600">Jessica Anne Bogart - A VO Professional; now cloned!</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <SpeakerWaveIcon className="w-5 h-5 text-gray-600" />
-              </button>
-              <button
-                onClick={handlePlayPause}
-                disabled={!generatedAudioUrl}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                  generatedAudioUrl 
-                    ? "bg-black hover:bg-gray-800" 
-                    : "bg-gray-300 cursor-not-allowed"
-                }`}
-              >
-                {isPlaying ? (
-                  <PauseIcon className="w-5 h-5 text-white" />
-                ) : (
-                  <PlayIcon className="w-5 h-5 text-white ml-0.5" />
-                )}
-              </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <ArrowPathIcon className="w-5 h-5 text-gray-600" />
-              </button>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <span>0:16</span>
-              <div className="w-48 h-1 bg-gray-200 rounded-full">
-                <div className="w-1/3 h-full bg-black rounded-full"></div>
-              </div>
-              <span>0:27</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <ArrowDownTrayIcon className="w-5 h-5 text-gray-600" />
-              </button>
-              <button className="text-sm text-gray-600 hover:text-gray-900">Share</button>
+        {/* Error Display */}
+        {error && (
+          <div className="px-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-sm text-red-800">{error}</p>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Audio Player */}
+        {generatedAudioUrl && (
+          <div className="bg-white border-t border-gray-100 p-6">
+            <AudioPlayer
+              audioUrl={generatedAudioUrl}
+              title={text.substring(0, 50) + (text.length > 50 ? '...' : '')}
+              voice={selectedVoice?.name || 'Unknown'}
+              onPlayStateChange={(playing) => setIsPlaying(playing)}
+            />
+          </div>
+        )}
       </div>
 
       {/* Voice Selection Panel */}
@@ -736,84 +619,92 @@ export default function TextToSpeechPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {/* Recently Used */}
-            {recentlyUsedVoices.length > 0 && (
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-gray-700">Recently used</h3>
-                  <button className="text-xs text-gray-500 hover:text-gray-700">View all</button>
-                </div>
-                <div className="space-y-2">
-                  {recentlyUsedVoices.map((voice) => (
-                    <button
-                      key={voice.id}
-                      onClick={() => {
-                        setSelectedVoice(voice);
-                        setShowVoicePanel(false);
-                      }}
-                      className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 ${voice.bgColor} rounded-full flex items-center justify-center`}>
-                          <span className="text-sm">{voice.avatar}</span>
-                        </div>
-                        <div className="text-left">
-                          <p className="text-sm font-medium text-gray-900">{voice.name}</p>
-                          <p className="text-xs text-gray-500 truncate max-w-[200px]">{voice.description}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button className="p-1 hover:bg-gray-200 rounded transition-colors">
-                          <PlayIcon className="w-4 h-4 text-gray-600" />
-                        </button>
-                        <button className="p-1 hover:bg-gray-200 rounded transition-colors">
-                          <EllipsisHorizontalIcon className="w-4 h-4 text-gray-600" />
-                        </button>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+            {loadingVoices ? (
+              <div className="p-4 text-center text-gray-500">
+                Loading voices...
               </div>
-            )}
+            ) : (
+              <>
+                {/* OpenAI Voices */}
+                {openAIVoices.length > 0 && (
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-medium text-gray-700">OpenAI Voices</h3>
+                      <button className="text-xs text-gray-500 hover:text-gray-700">View all</button>
+                    </div>
+                    <div className="space-y-2">
+                      {openAIVoices.map((voice) => (
+                        <button
+                          key={voice.id}
+                          onClick={() => {
+                            setSelectedVoice(voice);
+                            setShowVoicePanel(false);
+                          }}
+                          className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-8 h-8 ${voice.bgColor} rounded-full flex items-center justify-center`}>
+                              <span className="text-sm">{voice.avatar}</span>
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-medium text-gray-900">{voice.name}</p>
+                              <p className="text-xs text-gray-500 truncate max-w-[200px]">{voice.description}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <button className="p-1 hover:bg-gray-200 rounded transition-colors">
+                              <PlayIcon className="w-4 h-4 text-gray-600" />
+                            </button>
+                            <button className="p-1 hover:bg-gray-200 rounded transition-colors">
+                              <EllipsisHorizontalIcon className="w-4 h-4 text-gray-600" />
+                            </button>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            {/* Default Voices */}
-            {defaultVoices.length > 0 && (
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-gray-700">Default</h3>
-                  <button className="text-xs text-gray-500 hover:text-gray-700">View all</button>
-                </div>
-                <div className="space-y-2">
-                  {defaultVoices.map((voice) => (
-                    <button
-                      key={voice.id}
-                      onClick={() => {
-                        setSelectedVoice(voice);
-                        setShowVoicePanel(false);
-                      }}
-                      className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 ${voice.bgColor} rounded-full flex items-center justify-center`}>
-                          <span className="text-sm">{voice.avatar}</span>
-                        </div>
-                        <div className="text-left">
-                          <p className="text-sm font-medium text-gray-900">{voice.name}</p>
-                          <p className="text-xs text-gray-500 truncate max-w-[200px]">{voice.description}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button className="p-1 hover:bg-gray-200 rounded transition-colors">
-                          <PlayIcon className="w-4 h-4 text-gray-600" />
+                {/* ElevenLabs Voices */}
+                {elevenLabsVoices.length > 0 && (
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-medium text-gray-700">Professional Voices</h3>
+                      <button className="text-xs text-gray-500 hover:text-gray-700">View all</button>
+                    </div>
+                    <div className="space-y-2">
+                      {elevenLabsVoices.map((voice) => (
+                        <button
+                          key={voice.id}
+                          onClick={() => {
+                            setSelectedVoice(voice);
+                            setShowVoicePanel(false);
+                          }}
+                          className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-8 h-8 ${voice.bgColor} rounded-full flex items-center justify-center`}>
+                              <span className="text-sm">{voice.avatar}</span>
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-medium text-gray-900">{voice.name}</p>
+                              <p className="text-xs text-gray-500 truncate max-w-[200px]">{voice.description}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <button className="p-1 hover:bg-gray-200 rounded transition-colors">
+                              <PlayIcon className="w-4 h-4 text-gray-600" />
+                            </button>
+                            <button className="p-1 hover:bg-gray-200 rounded transition-colors">
+                              <EllipsisHorizontalIcon className="w-4 h-4 text-gray-600" />
+                            </button>
+                          </div>
                         </button>
-                        <button className="p-1 hover:bg-gray-200 rounded transition-colors">
-                          <EllipsisHorizontalIcon className="w-4 h-4 text-gray-600" />
-                        </button>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
