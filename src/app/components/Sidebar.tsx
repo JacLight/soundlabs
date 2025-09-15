@@ -47,10 +47,10 @@ export default function Sidebar() {
     <div className="w-[260px] bg-white border-r border-gray-100 flex flex-col h-screen">
       <div className="px-5 py-4 border-b border-gray-100">
         <div className="flex items-center space-x-2.5">
-          <div className="w-7 h-7 bg-black rounded-sm flex items-center justify-center">
-            <span className="text-white font-semibold text-xs">11</span>
+          <div className="w-7 h-7 bg-gradient-to-br from-purple-600 to-blue-600 rounded-sm flex items-center justify-center">
+            <span className="text-white font-bold text-xs">SL</span>
           </div>
-          <span className="font-semibold text-base tracking-tight">ElevenLabs</span>
+          <span className="font-semibold text-base tracking-tight">SoundLabs</span>
         </div>
       </div>
 

@@ -35,29 +35,66 @@ const voiceColors: Record<string, string> = {
   'josh': 'bg-emerald-100'
 };
 
-const historyItems = [
-  {
-    id: 1,
-    text: "Imagine building an app... not with code, not with clicks... but with conversation.",
-    voice: "Liam",
-    timestamp: "5 days ago",
-    duration: "0:27",
-  },
-  {
-    id: 2,
-    text: "Imagine building an app... not with code, not with clicks... but with conversation.",
-    voice: "Brian",
-    timestamp: "5 days ago",
-    duration: "0:25",
-  },
-  {
-    id: 3,
-    text: "[Opening Scene] Dark screen. A spark of code fades into glow...",
-    voice: "Brian",
-    timestamp: "5 days ago",
-    duration: "0:45",
-  },
-];
+// Supported languages
+const SUPPORTED_LANGUAGES = [
+  { code: 'en', name: 'English', flag: '🇬🇧' },
+  { code: 'es', name: 'Spanish', flag: '🇪🇸' },
+  { code: 'fr', name: 'French', flag: '🇫🇷' },
+  { code: 'de', name: 'German', flag: '🇩🇪' },
+  { code: 'it', name: 'Italian', flag: '🇮🇹' },
+  { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
+  { code: 'pl', name: 'Polish', flag: '🇵🇱' },
+  { code: 'tr', name: 'Turkish', flag: '🇹🇷' },
+  { code: 'ru', name: 'Russian', flag: '🇷🇺' },
+  { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
+  { code: 'cs', name: 'Czech', flag: '🇨🇿' },
+  { code: 'ar', name: 'Arabic', flag: '🇸🇦' },
+  { code: 'zh', name: 'Chinese', flag: '🇨🇳' },
+  { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
+  { code: 'ko', name: 'Korean', flag: '🇰🇷' },
+  { code: 'hi', name: 'Hindi', flag: '🇮🇳' },
+  { code: 'af', name: 'Afrikaans', flag: '🇿🇦' },
+  { code: 'hy', name: 'Armenian', flag: '🇦🇲' },
+  { code: 'az', name: 'Azerbaijani', flag: '🇦🇿' },
+  { code: 'be', name: 'Belarusian', flag: '🇧🇾' },
+  { code: 'bs', name: 'Bosnian', flag: '🇧🇦' },
+  { code: 'bg', name: 'Bulgarian', flag: '🇧🇬' },
+  { code: 'ca', name: 'Catalan', flag: '🇪🇸' },
+  { code: 'hr', name: 'Croatian', flag: '🇭🇷' },
+  { code: 'da', name: 'Danish', flag: '🇩🇰' },
+  { code: 'et', name: 'Estonian', flag: '🇪🇪' },
+  { code: 'fi', name: 'Finnish', flag: '🇫🇮' },
+  { code: 'gl', name: 'Galician', flag: '🇪🇸' },
+  { code: 'el', name: 'Greek', flag: '🇬🇷' },
+  { code: 'he', name: 'Hebrew', flag: '🇮🇱' },
+  { code: 'hu', name: 'Hungarian', flag: '🇭🇺' },
+  { code: 'is', name: 'Icelandic', flag: '🇮🇸' },
+  { code: 'id', name: 'Indonesian', flag: '🇮🇩' },
+  { code: 'kn', name: 'Kannada', flag: '🇮🇳' },
+  { code: 'kk', name: 'Kazakh', flag: '🇰🇿' },
+  { code: 'lv', name: 'Latvian', flag: '🇱🇻' },
+  { code: 'lt', name: 'Lithuanian', flag: '🇱🇹' },
+  { code: 'mk', name: 'Macedonian', flag: '🇲🇰' },
+  { code: 'ms', name: 'Malay', flag: '🇲🇾' },
+  { code: 'mr', name: 'Marathi', flag: '🇮🇳' },
+  { code: 'mi', name: 'Maori', flag: '🇳🇿' },
+  { code: 'ne', name: 'Nepali', flag: '🇳🇵' },
+  { code: 'no', name: 'Norwegian', flag: '🇳🇴' },
+  { code: 'fa', name: 'Persian', flag: '🇮🇷' },
+  { code: 'ro', name: 'Romanian', flag: '🇷🇴' },
+  { code: 'sr', name: 'Serbian', flag: '🇷🇸' },
+  { code: 'sk', name: 'Slovak', flag: '🇸🇰' },
+  { code: 'sl', name: 'Slovenian', flag: '🇸🇮' },
+  { code: 'sw', name: 'Swahili', flag: '🇰🇪' },
+  { code: 'sv', name: 'Swedish', flag: '🇸🇪' },
+  { code: 'tl', name: 'Tagalog', flag: '🇵🇭' },
+  { code: 'ta', name: 'Tamil', flag: '🇮🇳' },
+  { code: 'th', name: 'Thai', flag: '🇹🇭' },
+  { code: 'uk', name: 'Ukrainian', flag: '🇺🇦' },
+  { code: 'ur', name: 'Urdu', flag: '🇵🇰' },
+  { code: 'vi', name: 'Vietnamese', flag: '🇻🇳' },
+  { code: 'cy', name: 'Welsh', flag: '🏴󐁧󐁢󐁷󐁬󐁳󐁿' },
+].sort((a, b) => a.name.localeCompare(b.name));
 
 const sampleTexts = [
   {
@@ -80,6 +117,20 @@ const sampleTexts = [
   },
 ];
 
+// History item interface
+interface HistoryItem {
+  id: string;
+  text: string;
+  voiceId: string;
+  voiceName: string;
+  language: string;
+  timestamp: Date;
+  duration: string;
+  audioUrl: string | null;
+  settings: any;
+  isExpanded?: boolean;
+}
+
 export default function TextToSpeechPage() {
   const [text, setText] = useState("");
   const [voices, setVoices] = useState<VoiceDisplay[]>([]);
@@ -89,15 +140,28 @@ export default function TextToSpeechPage() {
   const [activeTab, setActiveTab] = useState<"settings" | "history">("settings");
   const [showVoicePanel, setShowVoicePanel] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [playingHistoryId, setPlayingHistoryId] = useState<number | null>(null);
+  const [playingHistoryId, setPlayingHistoryId] = useState<string | null>(null);
   const [speed, setSpeed] = useState(1);
   const [stability, setStability] = useState(0.5);
   const [similarity, setSimilarity] = useState(0.75);
   const [styleExaggeration, setStyleExaggeration] = useState(0);
   const [speakerBoost, setSpeakerBoost] = useState(true);
+  
+  // New advanced controls
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [accent, setAccent] = useState(0.5);
+  const [emotionalRange, setEmotionalRange] = useState(0.5);
+  const [intonation, setIntonation] = useState(0.5);
+  const [impressions, setImpressions] = useState(0);
+  const [tone, setTone] = useState(0.5);
+  const [whispering, setWhispering] = useState(0);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+  
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const characterCount = text.length;
@@ -140,8 +204,14 @@ export default function TextToSpeechPage() {
     if (!audio) return;
 
     const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
-    const handleEnded = () => setIsPlaying(false);
+    const handlePause = () => {
+      setIsPlaying(false);
+      setPlayingHistoryId(null);
+    };
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setPlayingHistoryId(null);
+    };
 
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
@@ -177,11 +247,45 @@ export default function TextToSpeechPage() {
           similarity: similarity,
           style: styleExaggeration,
           speakerBoost: speakerBoost,
+          // Advanced settings
+          language: selectedLanguage,
+          accent: accent,
+          emotionalRange: emotionalRange,
+          intonation: intonation,
+          impressions: impressions,
+          tone: tone,
+          whispering: whispering,
         }
       });
 
       if (response.success && response.audioUrl) {
         setGeneratedAudioUrl(response.audioUrl);
+        
+        // Add to history
+        const historyItem: HistoryItem = {
+          id: `hist_${Date.now()}`,
+          text: text,
+          voiceId: selectedVoice.id,
+          voiceName: selectedVoice.name,
+          language: selectedLanguage,
+          timestamp: new Date(),
+          duration: '0:' + Math.floor(text.length / 150).toString().padStart(2, '0'), // Estimate
+          audioUrl: response.audioUrl,
+          settings: {
+            stability,
+            similarity,
+            style: styleExaggeration,
+            speakerBoost,
+            accent,
+            emotionalRange,
+            intonation,
+            impressions,
+            tone,
+            whispering
+          }
+        };
+        setHistory(prev => [historyItem, ...prev]);
+        
         // Auto-play the generated audio
         if (audioRef.current) {
           audioRef.current.src = response.audioUrl;
@@ -212,17 +316,62 @@ export default function TextToSpeechPage() {
     setText(sample.text);
   };
 
-  const handlePlayHistory = (id: number) => {
-    setPlayingHistoryId(playingHistoryId === id ? null : id);
+  const handlePlayHistory = (item: HistoryItem) => {
+    if (!item.audioUrl) return;
+    
+    // If this item is already playing, pause it
+    if (playingHistoryId === item.id && isPlaying) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+        setPlayingHistoryId(null);
+      }
+    } else {
+      // Play this item
+      setGeneratedAudioUrl(item.audioUrl);
+      if (audioRef.current) {
+        audioRef.current.src = item.audioUrl;
+        audioRef.current.play();
+        setIsPlaying(true);
+        setPlayingHistoryId(item.id);
+      }
+    }
+  };
+
+  const handleDownloadAudio = (item: HistoryItem) => {
+    if (item.audioUrl) {
+      const a = document.createElement('a');
+      a.href = item.audioUrl;
+      a.download = `speech_${item.voiceName}_${item.id}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  };
+
+  const toggleExpandHistory = (id: string) => {
+    setExpandedHistoryId(expandedHistoryId === id ? null : id);
   };
 
   const handleCopyText = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
-  const handleSendToEditor = (text: string) => {
-    setText(text);
+  const handleSendToEditor = (historyText: string) => {
+    setText(historyText);
     setActiveTab("settings");
+  };
+
+  const formatTimestamp = (date: Date) => {
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+    
+    if (hours < 1) return 'Just now';
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString();
   };
 
   const filteredVoices = voices.filter(voice =>
@@ -292,6 +441,25 @@ export default function TextToSpeechPage() {
                   )}
                   <ChevronRightIcon className="w-4 h-4 text-gray-400" />
                 </button>
+              </div>
+
+              {/* Language Selection */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Language</label>
+                <div className="relative">
+                  <select 
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm appearance-none"
+                  >
+                    {SUPPORTED_LANGUAGES.map(lang => (
+                      <option key={lang.code} value={lang.code}>
+                        {lang.flag} {lang.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90 pointer-events-none" />
+                </div>
               </div>
 
               {/* Model Selection */}
@@ -410,6 +578,142 @@ export default function TextToSpeechPage() {
                 </button>
               </div>
 
+              {/* Advanced Settings Toggle */}
+              <div className="border-t border-gray-200 pt-4">
+                <button
+                  onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+                  className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900"
+                >
+                  <span>Advanced Voice Controls</span>
+                  <ChevronRightIcon className={`w-4 h-4 transition-transform ${showAdvancedSettings ? 'rotate-90' : ''}`} />
+                </button>
+              </div>
+
+              {/* Advanced Settings */}
+              {showAdvancedSettings && (
+                <div className="space-y-4 pt-4 border-t border-gray-100">
+                  {/* Accent */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <label className="text-sm font-medium text-gray-700">Accent</label>
+                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                        <span>Neutral</span>
+                        <span>Strong</span>
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={accent}
+                      onChange={(e) => setAccent(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Emotional Range */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <label className="text-sm font-medium text-gray-700">Emotional Range</label>
+                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                        <span>Flat</span>
+                        <span>Expressive</span>
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={emotionalRange}
+                      onChange={(e) => setEmotionalRange(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Intonation */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <label className="text-sm font-medium text-gray-700">Intonation</label>
+                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                        <span>Monotone</span>
+                        <span>Dynamic</span>
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={intonation}
+                      onChange={(e) => setIntonation(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Impressions */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <label className="text-sm font-medium text-gray-700">Impressions</label>
+                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                        <span>None</span>
+                        <span>Character</span>
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={impressions}
+                      onChange={(e) => setImpressions(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Tone */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <label className="text-sm font-medium text-gray-700">Tone</label>
+                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                        <span>Serious</span>
+                        <span>Playful</span>
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={tone}
+                      onChange={(e) => setTone(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Whispering */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <label className="text-sm font-medium text-gray-700">Whispering</label>
+                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                        <span>Normal</span>
+                        <span>Whisper</span>
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={whispering}
+                      onChange={(e) => setWhispering(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              )}
+
               <button className="text-sm text-gray-500 hover:text-gray-700">
                 Reset values
               </button>
@@ -428,59 +732,109 @@ export default function TextToSpeechPage() {
 
               {/* History Items */}
               <div className="space-y-3">
-                {historyItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="text-sm text-gray-900 line-clamp-2 flex-1">{item.text}</p>
-                      <button
-                        onClick={() => handlePlayHistory(item.id)}
-                        className="ml-2 w-7 h-7 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors flex-shrink-0"
-                      >
-                        {playingHistoryId === item.id ? (
-                          <PauseIcon className="w-3.5 h-3.5 text-white" />
-                        ) : (
-                          <PlayIcon className="w-3.5 h-3.5 text-white ml-0.5" />
-                        )}
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2 text-xs text-gray-500">
-                        <CheckCircleIcon className="w-3 h-3 text-green-500" />
-                        <span>{item.voice}</span>
-                        <span>•</span>
-                        <span>{item.timestamp}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <button
-                          onClick={() => handleCopyText(item.text)}
-                          className="p-1 hover:bg-gray-200 rounded transition-colors"
-                        >
-                          <ClipboardDocumentIcon className="w-3.5 h-3.5 text-gray-500" />
-                        </button>
-                        <button className="p-1 hover:bg-gray-200 rounded transition-colors">
-                          <ArrowDownTrayIcon className="w-3.5 h-3.5 text-gray-500" />
-                        </button>
-                        <button
-                          onClick={() => handleSendToEditor(item.text)}
-                          className="p-1 hover:bg-gray-200 rounded transition-colors"
-                        >
-                          <ArrowPathIcon className="w-3.5 h-3.5 text-gray-500" />
-                        </button>
-                        <button className="p-1 hover:bg-gray-200 rounded transition-colors">
-                          <EllipsisHorizontalIcon className="w-3.5 h-3.5 text-gray-500" />
-                        </button>
-                      </div>
-                    </div>
+                {history.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <SpeakerWaveIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p className="text-sm">No history yet</p>
+                    <p className="text-xs mt-1">Generate some speech to see it here</p>
                   </div>
-                ))}
-              </div>
+                ) : (
+                  history.map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-white border border-gray-200 rounded-lg overflow-hidden"
+                    >
+                      {/* Card Header */}
+                      <div className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <span className="text-sm font-medium text-gray-900">{item.voiceName}</span>
+                              <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full">
+                                {SUPPORTED_LANGUAGES.find(l => l.code === item.language)?.flag} {item.language.toUpperCase()}
+                              </span>
+                              <span className="text-xs text-gray-500">{item.duration}</span>
+                            </div>
+                            <p className="text-sm text-gray-700 line-clamp-2">
+                              {item.text}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-2">
+                              {formatTimestamp(item.timestamp)}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-2 ml-4">
+                            <button
+                              onClick={() => handlePlayHistory(item)}
+                              className="w-8 h-8 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors"
+                              title="Play"
+                            >
+                              {playingHistoryId === item.id ? (
+                                <PauseIcon className="w-4 h-4 text-white" />
+                              ) : (
+                                <PlayIcon className="w-4 h-4 text-white ml-0.5" />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => handleDownloadAudio(item)}
+                              className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                              title="Download"
+                            >
+                              <ArrowDownTrayIcon className="w-4 h-4 text-gray-600" />
+                            </button>
+                          </div>
+                        </div>
 
-              {/* Date Separators */}
-              <div className="mt-6 text-center">
-                <p className="text-xs text-gray-400">September 7, 2025</p>
+                        {/* Action Buttons */}
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                          <button
+                            onClick={() => toggleExpandHistory(item.id)}
+                            className="text-xs text-gray-500 hover:text-gray-700 flex items-center space-x-1"
+                          >
+                            <ChevronRightIcon className={`w-3 h-3 transition-transform ${expandedHistoryId === item.id ? 'rotate-90' : ''}`} />
+                            <span>{expandedHistoryId === item.id ? 'Hide' : 'Show'} full transcript</span>
+                          </button>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => handleCopyText(item.text)}
+                              className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                              title="Copy text"
+                            >
+                              <ClipboardDocumentIcon className="w-4 h-4 text-gray-500" />
+                            </button>
+                            <button
+                              onClick={() => handleSendToEditor(item.text)}
+                              className="px-3 py-1 bg-black text-white text-xs rounded-lg hover:bg-gray-800 transition-colors"
+                            >
+                              Use this text
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Expanded Content */}
+                      {expandedHistoryId === item.id && (
+                        <div className="px-4 pb-4 border-t border-gray-100">
+                          <div className="mt-4">
+                            <h4 className="text-xs font-medium text-gray-700 mb-2">Full Transcript:</h4>
+                            <div className="p-3 bg-gray-50 rounded-lg">
+                              <p className="text-sm text-gray-900 whitespace-pre-wrap">{item.text}</p>
+                            </div>
+                            
+                            <h4 className="text-xs font-medium text-gray-700 mt-4 mb-2">Settings Used:</h4>
+                            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                              <div>Stability: {(item.settings.stability * 100).toFixed(0)}%</div>
+                              <div>Similarity: {(item.settings.similarity * 100).toFixed(0)}%</div>
+                              <div>Accent: {(item.settings.accent * 100).toFixed(0)}%</div>
+                              <div>Emotional Range: {(item.settings.emotionalRange * 100).toFixed(0)}%</div>
+                              <div>Tone: {(item.settings.tone * 100).toFixed(0)}%</div>
+                              <div>Whispering: {(item.settings.whispering * 100).toFixed(0)}%</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}

@@ -6,8 +6,8 @@ import Sidebar from "./components/Sidebar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ElevenLabs Clone",
-  description: "A clone of ElevenLabs UI",
+  title: "SoundLabs",
+  description: "Advanced AI Voice Generation Platform",
 };
 
 export default function RootLayout({

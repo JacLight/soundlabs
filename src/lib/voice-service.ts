@@ -216,6 +216,14 @@ export interface VoiceSettings {
   similarity: number;
   style?: number;
   speakerBoost?: boolean;
+  // Advanced settings for dubbing
+  language?: string;
+  accent?: number;
+  emotionalRange?: number;
+  intonation?: number;
+  impressions?: number;
+  tone?: number;
+  whispering?: number;
 }
 
 export interface GenerateSpeechOptions {
@@ -297,16 +305,62 @@ class VoiceService {
       // Use AppEngineClient directly
       const appEngineClient = getAppEngineClient();
       const endpoint = `${appmintEndpoints.upstream_call.path}/OpenAIProvider/textToSpeech`;
+      // Build the request data with all settings
+      const requestData: any = {
+        input: options.text,
+        voice: options.voiceId || 'alloy',
+        format: 'mp3', // Using format instead of response_format
+        model: options.model || 'tts-1',
+      };
+
+      // Add all the advanced settings if provided
+      if (options.settings) {
+        // Basic settings
+        if (options.settings.stability !== undefined) {
+          requestData.stability = options.settings.stability;
+        }
+        if (options.settings.similarity !== undefined) {
+          requestData.similarity_boost = options.settings.similarity;
+        }
+        if (options.settings.style !== undefined) {
+          requestData.style = options.settings.style;
+        }
+        if (options.settings.speakerBoost !== undefined) {
+          requestData.use_speaker_boost = options.settings.speakerBoost;
+        }
+        
+        // Advanced dubbing settings
+        if (options.settings.language) {
+          requestData.language = options.settings.language;
+        }
+        if (options.settings.accent !== undefined) {
+          requestData.accent_strength = options.settings.accent;
+        }
+        if (options.settings.emotionalRange !== undefined) {
+          requestData.emotional_range = options.settings.emotionalRange;
+        }
+        if (options.settings.intonation !== undefined) {
+          requestData.intonation = options.settings.intonation;
+        }
+        if (options.settings.impressions !== undefined) {
+          requestData.impressions = options.settings.impressions;
+        }
+        if (options.settings.tone !== undefined) {
+          requestData.tone = options.settings.tone;
+        }
+        if (options.settings.whispering !== undefined) {
+          requestData.whispering = options.settings.whispering;
+        }
+      }
+
+      console.log('Sending TTS request with data:', requestData);
+
       const response = await appEngineClient.processRequest(
         'POST',
         endpoint,
         {
           configId: 'default',
-          data: {
-            input: options.text,
-            voice: options.voiceId || 'alloy',
-            format: 'mp3' // Using format instead of response_format
-          }
+          data: requestData
         }
       );
       
